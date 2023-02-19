@@ -8,42 +8,44 @@ const inputs = require("fs")
   .toString()
   .split("\n");
 
-const [N, M, K] = inputs[0].split(" ").map((v) => +v);
+const [N, r, c] = inputs[0].split(" ").map((v) => +v);
 
-const trackBackward = (point, startPoint) => {
-  if (point === startPoint) {
-    return 1;
+const getSegmentNumber = (n, r, c) => {
+  const center = Math.pow(2, n) / 2;
+
+  let segmentNumber = 0;
+  if (c >= center) {
+    segmentNumber += 1;
+  }
+  if (r >= center) {
+    segmentNumber += 2;
   }
 
-  const horizontalBackPoint = point - 1;
-  const verticalBackPoint = point - M;
-
-  let result = 0;
-
-  // horizontal과 현재 point가 같은 행에 있어야함
-  if (
-    Math.floor((horizontalBackPoint - 1) / M) === Math.floor((point - 1) / M)
-  ) {
-    result += trackBackward(horizontalBackPoint, startPoint);
-  }
-
-  if (verticalBackPoint >= startPoint) {
-    result += trackBackward(verticalBackPoint, startPoint);
-  }
-
-  return result;
+  return segmentNumber;
 };
 
-const calcPaths = (start, end) => {
-  return trackBackward(end, start);
+let visitingNumber = 0;
+
+const recursive = (n, r, c) => {
+  if (n === 0) {
+    return;
+  }
+
+  const segmentNumber = getSegmentNumber(n, r, c);
+  visitingNumber += Math.pow(2, n - 1) * Math.pow(2, n - 1) * segmentNumber;
+
+  let nextRow = r;
+  let nextCol = c;
+
+  if (segmentNumber === 1 || segmentNumber === 3) {
+    nextCol -= Math.pow(2, n - 1);
+  }
+  if (segmentNumber === 2 || segmentNumber === 3) {
+    nextRow -= Math.pow(2, n - 1);
+  }
+
+  recursive(n - 1, nextRow, nextCol);
 };
 
-let answer;
-
-if (K === 0) {
-  answer = calcPaths(1, N * M);
-} else {
-  answer = calcPaths(1, K) * calcPaths(K, N * M);
-}
-
-console.log(answer);
+recursive(N, r, c);
+console.log(visitingNumber);
